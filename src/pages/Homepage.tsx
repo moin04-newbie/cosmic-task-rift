@@ -7,6 +7,7 @@ import ConstellationBackground from "@/components/UI/ConstellationBackground";
 import TaskInput from "@/components/TaskInput";
 import AssistantAvatar from "@/components/AssistantAvatar";
 import { playSound } from "@/lib/audio";
+import { CheckCircle, Trophy, Zap } from "lucide-react";
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const Homepage = () => {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
           <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00F5FF] to-[#FF00FF] font-heading">
             CyberTask
@@ -42,6 +43,38 @@ const Homepage = () => {
           <p className="text-2xl mt-4 text-white/80 font-body">
             The most visually explosive to-do list in the metaverse
           </p>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
+          className="max-w-3xl mx-auto mb-10 bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-white/10"
+        >
+          <div className="text-center mb-5">
+            <h2 className="text-xl font-semibold text-[#00F5FF] mb-2 font-heading">Transform Your Productivity</h2>
+            <p className="text-white/70 font-body">
+              "The future belongs to those who take action today. Every completed task is a step toward your digital destiny."
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <FeatureCard 
+              icon={<CheckCircle className="text-[#00F5FF]" />} 
+              title="Task Mastery"
+              description="Track and complete tasks with cybernetic efficiency"
+            />
+            <FeatureCard 
+              icon={<Trophy className="text-[#FF00FF]" />} 
+              title="Achievement System"
+              description="Earn digital trophies as you conquer your tasks"
+            />
+            <FeatureCard 
+              icon={<Zap className="text-[#FFC107]" />} 
+              title="Boss Battles"
+              description="Defeat digital bosses by completing your goals"
+            />
+          </div>
         </motion.div>
         
         <motion.div
@@ -81,6 +114,18 @@ const Homepage = () => {
         </div>
       </div>
     </motion.div>
+  );
+};
+
+const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => {
+  return (
+    <div className="bg-black/20 backdrop-blur-sm p-4 rounded-lg border border-white/10 flex flex-col items-center text-center">
+      <div className="mb-2 w-10 h-10 flex items-center justify-center">
+        {icon}
+      </div>
+      <h3 className="text-white font-semibold mb-1 font-heading">{title}</h3>
+      <p className="text-white/60 text-sm font-body">{description}</p>
+    </div>
   );
 };
 
