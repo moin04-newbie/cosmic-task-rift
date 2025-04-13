@@ -1,54 +1,36 @@
 
-import { useState, useRef } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
-import { useTaskStore } from "@/store/taskStore";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/components/ui/use-toast";
 import { Task } from "@/types/task";
+import { useTaskStore } from "@/store/taskStore";
 import { playSound } from "@/lib/audio";
 import TaskExplosion from "./TaskCard/TaskExplosion";
 
 interface TaskCardProps {
   task: Task;
   onToggleComplete: () => void;
-  compact?: boolean;
 }
 
-const TaskCard = ({ task, onToggleComplete, compact = false }: TaskCardProps) => {
+const TaskCard = ({ task, onToggleComplete }: TaskCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isExploding, setIsExploding] = useState(false);
+  const [showExplosion, setShowExplosion] = useState(false);
   const { deleteTask } = useTaskStore();
   
-  // For 3D tilt effect
-  const cardRef = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  
-  // Transform values for tilting effect
-  const rotateX = useTransform(y, [-100, 100], [10, -10]);
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
-  
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current || task.completed) return;
-    
-    const rect = cardRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    x.set(e.clientX - centerX);
-    y.set(e.clientY - centerY);
-  };
-  
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-    setIsHovered(false);
-  };
-  
   const handleToggleComplete = () => {
+    // If completing a task (not uncompleting)
     if (!task.completed) {
-      setIsExploding(true);
-      // Delay the actual completion to show explosion
+      setShowExplosion(true);
+      playSound("add");
+      
+      // Wait for animation before toggling state
       setTimeout(() => {
         onToggleComplete();
+        toast({
+          title: "Task completed!",
+          description: "You've earned some XP!",
+        });
       }, 300);
     } else {
       onToggleComplete();
@@ -56,108 +38,102 @@ const TaskCard = ({ task, onToggleComplete, compact = false }: TaskCardProps) =>
   };
   
   const handleDelete = () => {
-    deleteTask(task.id);
     playSound("delete");
+    deleteTask(task.id);
+    toast({
+      title: "Task deleted",
+      description: "The task has been removed",
+      variant: "destructive",
+    });
   };
-  
-  // If the task is completed and it was exploding, we reset explosion state
-  if (task.completed && isExploding) {
-    setIsExploding(false);
-  }
 
   return (
     <motion.div
-      ref={cardRef}
       layout
-      style={{ 
-        x: 0,
-        y: 0,
-        rotateX: task.completed ? 0 : rotateX,
-        rotateY: task.completed ? 0 : rotateY,
-        transformPerspective: 1000,
-      }}
-      onMouseMove={handleMouseMove}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+      className="task-card-container"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      whileHover={{ z: 10 }}
-      className={`${compact ? "p-4" : "p-6"} relative overflow-hidden transition-all duration-200`}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Background layers */}
-      <div className="absolute inset-0 rounded-xl bg-black/60 backdrop-blur-md" />
-      
-      {/* RGB border animation */}
-      <div className={`absolute inset-0 rounded-xl ${task.completed ? "opacity-10" : "opacity-100"} transition-opacity duration-300`}>
-        <div className="absolute inset-0 rounded-xl border border-transparent bg-gradient-to-r from-[#00F5FF] via-[#FF00FF] to-[#00F5FF] bg-[length:200%_100%] animate-[border-scan_2s_linear_infinite]" />
-      </div>
-      
-      {/* Inner border for depth */}
-      <div className="absolute inset-[1px] rounded-[10px] border border-white/5 bg-black/40" />
-      
-      {/* Explosion effect on completion */}
-      {isExploding && <TaskExplosion />}
-      
-      {/* Content */}
-      <div 
-        className={`relative ${task.completed ? "opacity-60" : "opacity-100"} transition-opacity duration-300`}
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className={`relative overflow-hidden rounded-xl border ${
+          task.completed 
+            ? "border-[#00F5FF]/20 bg-[#00F5FF]/5" 
+            : "border-[#FF00FF]/20 bg-[#FF00FF]/5"
+        } backdrop-blur-md shadow-lg`}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className={`font-semibold text-white mb-1 ${compact ? "text-base" : "text-lg"} font-heading ${task.completed ? "line-through" : ""}`}>
-              {task.name}
-            </h3>
-            
-            {!compact && task.description && (
-              <p className={`text-white/70 text-sm mb-3 font-body ${task.completed ? "line-through" : ""}`}>
-                {task.description}
-              </p>
-            )}
-          </div>
-          
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleToggleComplete}
-            className={`w-6 h-6 flex-shrink-0 rounded-full border ${
-              task.completed 
-                ? "bg-[#00F5FF] border-[#00F5FF]" 
-                : "bg-transparent border-white/30"
-            } flex items-center justify-center transition-colors duration-200 mr-2`}
-          >
-            {task.completed && (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            )}
-          </motion.button>
+        {showExplosion && <TaskExplosion onComplete={() => setShowExplosion(false)} />}
+        
+        <div className="absolute inset-0 overflow-hidden">
+          <div 
+            className={`absolute inset-0 opacity-20 ${
+              task.completed ? "bg-[#00F5FF]/10" : "bg-[#FF00FF]/10"
+            }`}
+          />
+          <div 
+            className={`absolute top-0 left-0 w-full h-1 ${
+              task.completed ? "bg-[#00F5FF]" : "bg-[#FF00FF]"
+            }`}
+          />
         </div>
         
-        {/* Task actions */}
-        <div className="flex justify-between items-center mt-4">
-          {!compact && (
-            <span className="text-white/40 text-xs font-body">
-              {new Date(task.createdAt).toLocaleDateString()}
-            </span>
-          )}
+        <div className="p-5 relative">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 pt-1">
+              <Checkbox
+                checked={task.completed}
+                onCheckedChange={handleToggleComplete}
+                className={`h-5 w-5 border-2 ${
+                  task.completed 
+                    ? "border-[#00F5FF] bg-[#00F5FF]/20 text-[#00F5FF]" 
+                    : "border-[#FF00FF] bg-[#FF00FF]/20 text-[#FF00FF]"
+                }`}
+              />
+            </div>
+            
+            <div className="flex-1">
+              <h3 className={`text-lg font-semibold mb-1 ${
+                task.completed ? "text-[#00F5FF] line-through opacity-60" : "text-white"
+              } font-heading`}>
+                {task.name}
+              </h3>
+              
+              {task.description && (
+                <p className={`text-sm ${
+                  task.completed ? "text-white/40" : "text-white/60"
+                } font-body`}>
+                  {task.description}
+                </p>
+              )}
+              
+              <div className="mt-3 text-xs text-white/40 font-body">
+                Added: {new Date(task.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
           
-          <div className="flex space-x-2 ml-auto">
+          {isHovered && (
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               onClick={handleDelete}
-              className="text-white/50 hover:text-[#FF00FF] transition-colors duration-200"
+              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center
+                        bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" 
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
             </motion.button>
-          </div>
+          )}
         </div>
-      </div>
-      
-      {/* Focus/hover glow effect */}
-      {isHovered && !task.completed && (
-        <div className="absolute inset-0 rounded-xl bg-[#00F5FF]/5 pointer-events-none" />
-      )}
+      </motion.div>
     </motion.div>
   );
 };
