@@ -30,7 +30,7 @@ const Layout = () => {
       <Navbar />
       
       <PageTransition location={location.pathname}>
-        <main>
+        <main className="w-full min-h-screen pt-16">
           <Outlet />
         </main>
       </PageTransition>

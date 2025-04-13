@@ -20,17 +20,15 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/trophies" element={<TrophyRoom />} />
-              <Route path="/boss" element={<BossBattle />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </AnimatePresence>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/trophies" element={<TrophyRoom />} />
+            <Route path="/boss" element={<BossBattle />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
