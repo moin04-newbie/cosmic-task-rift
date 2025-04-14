@@ -26,17 +26,17 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/tasks" element={<TasksPage />} />
-            <Route path="/trophies" element={<TrophyRoom />} />
-            <Route path="/boss" element={<BossBattle />} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Homepage />} />
+            <Route path="tasks" element={<TasksPage />} />
+            <Route path="trophies" element={<TrophyRoom />} />
+            <Route path="boss" element={<BossBattle />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+        <Toaster />
+        <Sonner />
       </BrowserRouter>
-      <Toaster />
-      <Sonner />
     </TooltipProvider>
   </QueryClientProvider>
 );
