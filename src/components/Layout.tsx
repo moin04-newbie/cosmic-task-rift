@@ -25,7 +25,7 @@ const Layout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0f0f13] overflow-hidden font-body">
+    <div className="min-h-screen bg-[#0f0f13] overflow-x-hidden font-body">
       <Navbar />
       
       <PageTransition location={location.pathname}>
