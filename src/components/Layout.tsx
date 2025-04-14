@@ -5,25 +5,28 @@ import Navbar from "./Navbar";
 import { PageTransition } from "./UI/PageTransition";
 import { motion } from "framer-motion";
 import { playSound } from "@/lib/audio";
+import ThemeSwitcher from "./ThemeSwitcher";
+import { useThemeStore } from "@/store/themeStore";
 
 const Layout = () => {
   const location = useLocation();
   const [prevPathname, setPrevPathname] = useState("");
+  const { setTheme, getTheme } = useThemeStore();
+  const currentTheme = getTheme();
   
   useEffect(() => {
     // Initialize audio when the app loads
     playSound("init");
+    
+    // Apply current theme
+    setTheme(useThemeStore.getState().currentTheme);
     
     // Add custom fonts to the document
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap";
     document.head.appendChild(link);
-    
-    // Update CSS variables for our color scheme
-    document.documentElement.style.setProperty("--primary", "#00F5FF");
-    document.documentElement.style.setProperty("--secondary", "#FF00FF");
-  }, []);
+  }, [setTheme]);
   
   useEffect(() => {
     // Track previous path to help with transitions
@@ -33,7 +36,10 @@ const Layout = () => {
   }, [location.pathname, prevPathname]);
 
   return (
-    <div className="min-h-screen bg-[#0f0f13] font-body overflow-hidden">
+    <div 
+      className="min-h-screen font-body overflow-hidden"
+      style={{ backgroundColor: currentTheme.background }}
+    >
       <Navbar />
       
       <PageTransition location={location.key}>
@@ -43,6 +49,10 @@ const Layout = () => {
           </main>
         </Suspense>
       </PageTransition>
+      
+      <div className="fixed top-20 right-4 z-50">
+        <ThemeSwitcher />
+      </div>
       
       <motion.div 
         initial={{ opacity: 0 }}
