@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { playSound } from "@/lib/audio";
-import { User, Settings, Edit, ChevronDown } from "lucide-react";
+import { User, Settings, Edit, ChevronDown, Music, Bell, Globe, Moon, Sun } from "lucide-react";
 import { useThemeStore } from "@/store/themeStore";
+import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
-  const currentTheme = useThemeStore(state => state.getTheme());
+  const [isMoodsOpen, setIsMoodsOpen] = useState(false);
+  const { setTheme, getTheme, themes } = useThemeStore();
+  const currentTheme = getTheme();
+  const { toast } = useToast();
   
   // Mock user data - in a real app this would come from a user store or API
   const [userData, setUserData] = useState({
@@ -34,6 +38,20 @@ const Profile = () => {
   const handleStatsToggle = () => {
     setIsStatsOpen(!isStatsOpen);
     playSound("click");
+  };
+
+  const handleMoodToggle = () => {
+    setIsMoodsOpen(!isMoodsOpen);
+    playSound("click");
+  }
+  
+  const changeTheme = (themeName: string) => {
+    setTheme(themeName);
+    playSound(themeName.toLowerCase());
+    toast({
+      title: "Theme Updated",
+      description: `Switched to ${themeName} mood`,
+    });
   };
   
   return (
@@ -142,18 +160,58 @@ const Profile = () => {
                 </CollapsibleContent>
               </Collapsible>
 
+              {/* Mood Settings */}
+              <Collapsible open={isMoodsOpen} onOpenChange={setIsMoodsOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between">
+                    <span className="flex items-center"><Music className="w-4 h-4 mr-2" /> Mood Settings</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isMoodsOpen ? "transform rotate-180" : ""}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 pt-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.keys(themes).map((themeName) => (
+                      <motion.div
+                        key={themeName}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => changeTheme(themeName)}
+                        className={`p-3 rounded-lg cursor-pointer flex items-center space-x-2 ${
+                          currentTheme.name === themeName 
+                            ? "ring-2 ring-[#00F5FF] bg-white/10" 
+                            : "bg-white/5 hover:bg-white/8"
+                        }`}
+                      >
+                        <div 
+                          className="w-6 h-6 rounded-full" 
+                          style={{ backgroundColor: themes[themeName].primary }}
+                        />
+                        <div>
+                          <div className="text-sm font-medium">{themeName}</div>
+                          <div className="text-xs text-gray-400">Mood</div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
               <div className="pt-4 border-t border-gray-800">
                 <h3 className="text-lg font-semibold flex items-center mb-4">
                   <Settings className="w-5 h-5 mr-2" /> Account Settings
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span>Notification Sounds</span>
+                    <span className="flex items-center"><Bell className="w-4 h-4 mr-2" /> Notification Sounds</span>
                     <span className="text-[#00F5FF]">Enabled</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span>App Language</span>
+                    <span className="flex items-center"><Globe className="w-4 h-4 mr-2" /> App Language</span>
                     <span className="text-[#00F5FF]">English</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center"><Sun className="w-4 h-4 mr-2" /> Day Mode</span>
+                    <span className="text-[#00F5FF]">Off</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Account Created</span>
