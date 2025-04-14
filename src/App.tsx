@@ -8,6 +8,7 @@ import Homepage from "./pages/Homepage";
 import TasksPage from "./pages/TasksPage";
 import TrophyRoom from "./pages/TrophyRoom";
 import BossBattle from "./pages/BossBattle";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="tasks" element={<TasksPage />} />
             <Route path="trophies" element={<TrophyRoom />} />
             <Route path="boss" element={<BossBattle />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
