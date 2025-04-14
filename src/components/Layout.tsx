@@ -1,7 +1,6 @@
 
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import { PageTransition } from "./UI/PageTransition";
 import { motion } from "framer-motion";
@@ -30,7 +29,7 @@ const Layout = () => {
       <Navbar />
       
       <PageTransition location={location.pathname}>
-        <main className="w-full min-h-screen pt-16">
+        <main className="w-full min-h-[calc(100vh-16px)] pt-16">
           <Outlet />
         </main>
       </PageTransition>
