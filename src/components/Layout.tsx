@@ -1,6 +1,6 @@
 
 import { Outlet, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, Suspense, useState } from "react";
 import Navbar from "./Navbar";
 import { PageTransition } from "./UI/PageTransition";
 import { motion } from "framer-motion";
@@ -8,6 +8,7 @@ import { playSound } from "@/lib/audio";
 
 const Layout = () => {
   const location = useLocation();
+  const [prevPathname, setPrevPathname] = useState("");
   
   useEffect(() => {
     // Initialize audio when the app loads
@@ -23,15 +24,24 @@ const Layout = () => {
     document.documentElement.style.setProperty("--primary", "#00F5FF");
     document.documentElement.style.setProperty("--secondary", "#FF00FF");
   }, []);
+  
+  useEffect(() => {
+    // Track previous path to help with transitions
+    if (location.pathname !== prevPathname) {
+      setPrevPathname(location.pathname);
+    }
+  }, [location.pathname, prevPathname]);
 
   return (
     <div className="min-h-screen bg-[#0f0f13] font-body overflow-hidden">
       <Navbar />
       
       <PageTransition location={location.key}>
-        <main className="w-full min-h-[calc(100vh-16px)] pt-16">
-          <Outlet />
-        </main>
+        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">Loading...</div>}>
+          <main className="w-full min-h-[calc(100vh-16px)] pt-16">
+            <Outlet />
+          </main>
+        </Suspense>
       </PageTransition>
       
       <motion.div 
